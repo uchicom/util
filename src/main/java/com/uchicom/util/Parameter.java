@@ -2,6 +2,7 @@
 package com.uchicom.util;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,5 +50,11 @@ public class Parameter {
 	}
 	public boolean is(String key) {
 		return parameterMap.containsKey(key);
+	}
+	public LocalDate getLocalDate(String key) {
+		if (!parameterMap.containsKey(key)) {
+			return null;
+		}
+		return LocalDate.parse(parameterMap.get(key));
 	}
 }
