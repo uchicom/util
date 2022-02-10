@@ -8,6 +8,13 @@
 	<name>util</name>
 	<description>Utility Package</description>
 	<url>https://github.com/uchicom/util/wiki</url>
+	<properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spotless.version>2.20.1</spotless.version>
+		<java.version>1.8</java.version>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+	</properties>
 	<licenses>
 		<license>
 			<name>Apache License 2.0</name>
