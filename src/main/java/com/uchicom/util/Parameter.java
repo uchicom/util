@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Parameter 入力チェックを各サーバプで用意する。
+ * Parameter
  *
  * @author uchicom: Shigeki Uchiyama
  */
@@ -38,16 +38,19 @@ public class Parameter {
   }
 
   public File getFile(String key) {
-    return new File(parameterMap.get(key));
+    String path = parameterMap.get(key);
+    if (path == null) {
+      return null;
+    }
+    return new File(path);
   }
 
   public Integer getInteger(String key) {
     String value = parameterMap.get(key);
     if (value == null) {
       return null;
-    } else {
-      return Integer.valueOf(value);
     }
+    return Integer.valueOf(value);
   }
 
   public int getInt(String key) {
