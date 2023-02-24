@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.uchicom</groupId>
 	<artifactId>util</artifactId>
-	<version>1.0.3</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 	<name>util</name>
-	<description>Utility Package</description>
+	<description>Utility</description>
 	<url>https://github.com/uchicom/util/wiki</url>
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
