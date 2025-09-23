@@ -40,12 +40,26 @@ public class Parameter {
     return parameterMap.get(key);
   }
 
+  public String get(String key, String defaultValue) {
+    if (is(key)) {
+      return get(key);
+    }
+    return defaultValue;
+  }
+
   public File getFile(String key) {
     String path = parameterMap.get(key);
     if (path == null) {
       return null;
     }
     return new File(path);
+  }
+
+  public File getFile(String key, File defaultValue) {
+    if (is(key)) {
+      return getFile(key);
+    }
+    return defaultValue;
   }
 
   public Integer getInteger(String key) {
@@ -56,8 +70,22 @@ public class Parameter {
     return Integer.valueOf(value);
   }
 
+  public Integer getInteger(String key, Integer defaultValue) {
+    if (is(key)) {
+      return getInteger(key);
+    }
+    return defaultValue;
+  }
+
   public int getInt(String key) {
     return Integer.parseInt(parameterMap.get(key));
+  }
+
+  public int getInt(String key, int defaultValue) {
+    if (is(key)) {
+      return getInt(key);
+    }
+    return defaultValue;
   }
 
   public boolean is(String key) {
@@ -70,6 +98,14 @@ public class Parameter {
     }
     return LocalDate.parse(parameterMap.get(key));
   }
+
+  public LocalDate getLocalDate(String key, LocalDate defaultValue) {
+    if (is(key)) {
+      return getLocalDate(key);
+    }
+    return defaultValue;
+  }
+
   public static List<Long> parseIntPatterns(String[] args) {
     var list = new ArrayList<Long>();
     Stream.of(args).map(Parameter::parseIntPattern).forEach(list::addAll);
