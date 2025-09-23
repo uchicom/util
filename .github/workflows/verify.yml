@@ -23,7 +23,7 @@ jobs:
     - name: Verify with Maven
       run: mvn verify --file pom.xml
     - name: Upload jacoco result
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: jacoco
         path: target/site/jacoco
