@@ -10,7 +10,9 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
-/** @author uchicom: Shigeki Uchiyama */
+/**
+ * @author uchicom: Shigeki Uchiyama
+ */
 public class ResourceUtil {
 
   public static Properties createProperties(File file, String charset) {

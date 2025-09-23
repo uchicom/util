@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-/** @author uchicom: Shigeki Uchiyama */
+/**
+ * @author uchicom: Shigeki Uchiyama
+ */
 public class Numbre {
 
   public static List<Integer> expand(String arg) {
