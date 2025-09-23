@@ -70,6 +70,7 @@ public class Parameter {
     }
     return LocalDate.parse(parameterMap.get(key));
   }
+
   public static List<Long> parseIntPatterns(String[] args) {
     var list = new ArrayList<Long>();
     Stream.of(args).map(Parameter::parseIntPattern).forEach(list::addAll);
