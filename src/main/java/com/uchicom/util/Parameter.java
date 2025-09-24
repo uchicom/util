@@ -63,7 +63,7 @@ public class Parameter {
   }
 
   public Integer getInteger(String key) {
-    String value = parameterMap.get(key);
+    var value = parameterMap.get(key);
     if (value == null) {
       return null;
     }
@@ -118,7 +118,7 @@ public class Parameter {
         .forEach(
             id -> {
               if (id.contains("-")) {
-                var splits = id.split("\\-");
+                var splits = id.split("\\-", 0);
                 var start = Long.parseLong(splits[0]);
                 var end = Long.parseLong(splits[1]);
                 for (long i = start; i <= end; i++) {
