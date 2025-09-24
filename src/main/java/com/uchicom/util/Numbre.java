@@ -5,18 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-/** @author uchicom: Shigeki Uchiyama */
 public class Numbre {
 
   public static List<Integer> expand(String arg) {
-    List<Integer> list = new ArrayList<>();
+    var list = new ArrayList<Integer>();
     Stream.of(arg.split(","))
         .forEach(
             id -> {
               if (id.contains("-")) {
-                String[] splits = id.split("\\-");
-                int start = Integer.parseInt(splits[0]);
-                int end = Integer.parseInt(splits[1]);
+                var splits = id.split("\\-", 0);
+                var start = Integer.parseInt(splits[0]);
+                var end = Integer.parseInt(splits[1]);
                 for (int i = start; i <= end; i++) {
                   list.add(i);
                 }
@@ -28,14 +27,14 @@ public class Numbre {
   }
 
   public static List<Long> expandLong(String arg) {
-    List<Long> list = new ArrayList<>();
+    var list = new ArrayList<Long>();
     Stream.of(arg.split(","))
         .forEach(
             id -> {
               if (id.contains("-")) {
-                String[] splits = id.split("\\-");
-                long start = Long.parseLong(splits[0]);
-                long end = Long.parseLong(splits[1]);
+                var splits = id.split("\\-", 0);
+                var start = Long.parseLong(splits[0]);
+                var end = Long.parseLong(splits[1]);
                 for (long i = start; i <= end; i++) {
                   list.add(i);
                 }
