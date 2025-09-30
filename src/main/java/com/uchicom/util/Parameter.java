@@ -2,6 +2,7 @@
 package com.uchicom.util;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +59,21 @@ public class Parameter {
   public File getFile(String key, File defaultValue) {
     if (is(key)) {
       return getFile(key);
+    }
+    return defaultValue;
+  }
+
+  public Path getPath(String key) {
+    String path = parameterMap.get(key);
+    if (path == null) {
+      return null;
+    }
+    return Path.of(path);
+  }
+
+  public Path getPath(String key, Path defaultValue) {
+    if (is(key)) {
+      return getPath(key);
     }
     return defaultValue;
   }
