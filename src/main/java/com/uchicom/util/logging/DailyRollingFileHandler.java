@@ -129,7 +129,7 @@ public class DailyRollingFileHandler extends StreamHandler {
     return fileNameFormat.replaceAll("%d", DateTimeFormatter.ISO_DATE.format(date));
   }
 
-  void logInShutdownHook(Level level, String message) throws IOException {
+  public void logInShutdownHook(Level level, String message) throws IOException {
     var record = new LogRecord(level, message);
     var elem = Thread.currentThread().getStackTrace()[2];
     record.setSourceClassName(elem.getClassName());
