@@ -2,8 +2,10 @@
 package com.uchicom.util.logging;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +16,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
 
@@ -111,15 +114,30 @@ public class DailyRollingFileHandler extends StreamHandler {
 
   void open(LocalDate fileDate) {
     try {
-      var path = logDirPath.resolve(generateFilename(fileDate));
-      setOutputStream(
-          Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+      setOutputStream(createOutputStream(fileDate));
     } catch (IOException ex) {
       reportError(null, ex, ErrorManager.GENERIC_FAILURE);
     }
   }
 
+  OutputStream createOutputStream(LocalDate fileDate) throws IOException {
+    var path = logDirPath.resolve(generateFilename(fileDate));
+    return Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+  }
+
   String generateFilename(LocalDate date) {
     return fileNameFormat.replaceAll("%d", DateTimeFormatter.ISO_DATE.format(date));
+  }
+
+  void logInShutdownHook(Level level, String message) throws IOException {
+    var record = new LogRecord(level, message);
+    var elem = Thread.currentThread().getStackTrace()[2];
+    record.setSourceClassName(elem.getClassName());
+    record.setSourceMethodName(elem.getMethodName());
+    var log = getFormatter().format(record);
+    var zdt = ZonedDateTime.ofInstant(record.getInstant(), zoneId);
+    try (var os = createOutputStream(zdt.toLocalDate())) {
+      os.write(log.getBytes(StandardCharsets.UTF_8));
+    }
   }
 }
