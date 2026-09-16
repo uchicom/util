@@ -11,15 +11,13 @@ import java.util.Properties;
  *
  * <p>優先順位: 環境変数 &gt; システムプロパティ(-D) &gt; propertiesファイル
  */
-public class EnvProperties {
-
-  private final Properties properties = new Properties();
+public class EnvProperties extends Properties {
 
   public EnvProperties(String resourcePath) {
     try (InputStream input =
         EnvProperties.class.getClassLoader().getResourceAsStream(resourcePath)) {
       if (input != null) {
-        properties.load(input);
+        load(input);
       } else {
         System.err.println("Warning: Resource not found: " + resourcePath);
       }
@@ -28,6 +26,7 @@ public class EnvProperties {
     }
   }
 
+  @Override
   public String getProperty(String key) {
     var envKey = key.replace('.', '_').toUpperCase(Locale.ROOT);
 
@@ -41,11 +40,6 @@ public class EnvProperties {
       return sysValue;
     }
 
-    return properties.getProperty(key);
-  }
-
-  public String getProperty(String key, String defaultValue) {
-    var value = getProperty(key);
-    return value != null ? value : defaultValue;
+    return super.getProperty(key);
   }
 }
