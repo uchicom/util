@@ -3,6 +3,7 @@ package com.uchicom.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -65,5 +66,23 @@ public class EnvPropertiesTest {
     var envProperties = new EnvProperties("no/such/resource.properties");
 
     assertThat(envProperties.getProperty("db.url")).isNull();
+  }
+
+  @Test
+  public void envProperties_isSubclassOfProperties() {
+    var envProperties = new EnvProperties("envProperties.properties");
+
+    assertThat(envProperties).isInstanceOf(Properties.class);
+    assertThat(envProperties.containsKey("db.url")).isTrue();
+    assertThat(envProperties.size()).isEqualTo(3);
+  }
+
+  @Test
+  public void getProperty_returnsRuntimeSetValue_whenNoEnvOrSystemProperty() {
+    var envProperties = new EnvProperties("envProperties.properties");
+
+    envProperties.setProperty("db.url", "jdbc:runtime");
+
+    assertThat(envProperties.getProperty("db.url")).isEqualTo("jdbc:runtime");
   }
 }
