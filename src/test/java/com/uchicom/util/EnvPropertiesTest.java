@@ -27,19 +27,28 @@ public class EnvPropertiesTest {
   }
 
   @Test
-  public void getProperty_returnsSystemProperty_whenSetAndNoEnvVar() throws IOException {
+  public void getProperty_returnsSystemProperty_whenSetBeforeLoadAndNoEnvVar() throws IOException {
+    // システムプロパティによる上書きはload時に解決されるため、load前に設定する必要がある。
+    System.setProperty("db.url", "jdbc:system");
+    var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
+
+    assertThat(envProperties.getProperty("db.url")).isEqualTo("jdbc:system");
+  }
+
+  @Test
+  public void getProperty_systemPropertySetAfterLoad_isNotReflected() throws IOException {
     var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
     System.setProperty("db.url", "jdbc:system");
 
-    assertThat(envProperties.getProperty("db.url")).isEqualTo("jdbc:system");
+    assertThat(envProperties.getProperty("db.url")).isEqualTo("jdbc:default");
   }
 
   @Test
   public void getProperty_returnsEnvValue_evenIfSystemPropertyAndFileValueSet() throws IOException {
     // ENV_PROPERTIES_TEST_KEY=env-value is configured for the test JVM via the
     // maven-surefire-plugin <environmentVariables> in pom.xml.
-    var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
     System.setProperty("env.properties.test.key", "sys-value");
+    var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
 
     assertThat(envProperties.getProperty("env.properties.test.key")).isEqualTo("env-value");
   }
