@@ -1,8 +1,6 @@
 // (C) 2026 uchicom
 package com.uchicom.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -12,19 +10,6 @@ import java.util.Properties;
  * <p>優先順位: 環境変数 &gt; システムプロパティ(-D) &gt; propertiesファイル
  */
 public class EnvProperties extends Properties {
-
-  public EnvProperties(String resourcePath) {
-    try (InputStream input =
-        EnvProperties.class.getClassLoader().getResourceAsStream(resourcePath)) {
-      if (input != null) {
-        load(input);
-      } else {
-        System.err.println("Warning: Resource not found: " + resourcePath);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to load properties file: " + resourcePath, e);
-    }
-  }
 
   @Override
   public String getProperty(String key) {

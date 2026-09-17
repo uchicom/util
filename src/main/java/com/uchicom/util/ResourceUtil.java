@@ -14,19 +14,36 @@ public class ResourceUtil {
 
   public static Properties createProperties(File file, String charset)
       throws FileNotFoundException, IOException {
-    var properties = new Properties();
+    return load(new Properties(), file, charset);
+  }
+
+  public static Properties createProperties(InputStream is, String charset)
+      throws IOException, UnsupportedEncodingException {
+    return load(new Properties(), is, charset);
+  }
+
+  public static EnvProperties createEnvProperties(File file, String charset)
+      throws FileNotFoundException, IOException {
+    return load(new EnvProperties(), file, charset);
+  }
+
+  public static EnvProperties createEnvProperties(InputStream is, String charset)
+      throws IOException, UnsupportedEncodingException {
+    return load(new EnvProperties(), is, charset);
+  }
+
+  static <T extends Properties> T load(T properties, File file, String charset)
+      throws FileNotFoundException, IOException {
     if (file.exists() && file.isFile()) {
       try (var fis = new FileInputStream(file)) {
-        properties.putAll(createProperties(fis, charset));
+        load(properties, fis, charset);
       }
     }
     return properties;
   }
 
-  public static Properties createProperties(InputStream is, String charset)
+  static <T extends Properties> T load(T properties, InputStream is, String charset)
       throws IOException, UnsupportedEncodingException {
-
-    var properties = new Properties();
     try (var isr = new InputStreamReader(is, charset)) {
       properties.load(isr);
     }
