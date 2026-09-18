@@ -8,9 +8,9 @@ import java.util.Locale;
 import java.util.Properties;
 
 /**
- * 環境変数、システムプロパティ、propertiesファイルの優先順位で値を取得するProperties.
+ * システムプロパティ、環境変数、propertiesファイルの優先順位で値を取得するProperties.
  *
- * <p>優先順位: 環境変数 &gt; システムプロパティ(-D) &gt; propertiesファイル
+ * <p>優先順位: システムプロパティ(-D) &gt; 環境変数 &gt; propertiesファイル
  *
  * <p>環境変数・システムプロパティによる上書きはload時に解決し、値をそのまま保持する。
  */
@@ -30,16 +30,16 @@ public class EnvProperties extends Properties {
 
   private void resolveOverrides() {
     for (var key : stringPropertyNames()) {
+      var sysValue = System.getProperty(key);
+      if (sysValue != null && !sysValue.isBlank()) {
+        setProperty(key, sysValue);
+        continue;
+      }
+
       var envKey = key.replace('.', '_').toUpperCase(Locale.ROOT);
       var envValue = System.getenv(envKey);
       if (envValue != null && !envValue.isBlank()) {
         setProperty(key, envValue);
-        continue;
-      }
-
-      var sysValue = System.getProperty(key);
-      if (sysValue != null && !sysValue.isBlank()) {
-        setProperty(key, sysValue);
       }
     }
   }
