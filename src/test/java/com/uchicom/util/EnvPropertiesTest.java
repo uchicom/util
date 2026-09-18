@@ -44,10 +44,19 @@ public class EnvPropertiesTest {
   }
 
   @Test
-  public void getProperty_returnsEnvValue_evenIfSystemPropertyAndFileValueSet() throws IOException {
+  public void getProperty_returnsSystemProperty_evenIfEnvVarAndFileValueSet() throws IOException {
     // ENV_PROPERTIES_TEST_KEY=env-value is configured for the test JVM via the
     // maven-surefire-plugin <environmentVariables> in pom.xml.
     System.setProperty("env.properties.test.key", "sys-value");
+    var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
+
+    assertThat(envProperties.getProperty("env.properties.test.key")).isEqualTo("sys-value");
+  }
+
+  @Test
+  public void getProperty_returnsEnvValue_whenNoSystemPropertySet() throws IOException {
+    // ENV_PROPERTIES_TEST_KEY=env-value is configured for the test JVM via the
+    // maven-surefire-plugin <environmentVariables> in pom.xml.
     var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
 
     assertThat(envProperties.getProperty("env.properties.test.key")).isEqualTo("env-value");
