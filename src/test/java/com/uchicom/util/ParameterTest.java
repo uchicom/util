@@ -36,12 +36,44 @@ public class ParameterTest {
   }
 
   @Test
-  public void constructor_lastDashArg_isStoredWithDashAsKeyAndValue() {
+  public void constructor_lastDashArg_isStoredWithoutDashAsKeyAndValue() {
     var parameter = new Parameter(new String[] {"-v"});
 
-    assertThat(parameter.is("-v")).isTrue();
-    assertThat(parameter.is("v")).isFalse();
-    assertThat(parameter.get("-v")).isEqualTo("-v");
+    assertThat(parameter.is("v")).isTrue();
+    assertThat(parameter.is("-v")).isFalse();
+    assertThat(parameter.get("v")).isEqualTo("v");
+  }
+
+  @Test
+  public void constructor_flagFollowedByKey_isNotConsumedAsValue() {
+    var parameter = new Parameter(new String[] {"-v", "-x", "file"});
+
+    assertThat(parameter.get("v")).isEqualTo("v");
+    assertThat(parameter.get("x")).isEqualTo("file");
+  }
+
+  @Test
+  public void constructor_negativeNumber_isTreatedAsValue() {
+    var parameter = new Parameter(new String[] {"-n", "-5", "-d", "-1.5"});
+
+    assertThat(parameter.getInt("n")).isEqualTo(-5);
+    assertThat(parameter.get("d")).isEqualTo("-1.5");
+  }
+
+  @Test
+  public void constructor_duplicateKey_lastWins() {
+    var parameter = new Parameter(new String[] {"-a", "1", "-a", "2"});
+
+    assertThat(parameter.get("a")).isEqualTo("2");
+  }
+
+  @Test
+  public void getInt_missingKey_hasClearMessage() {
+    var parameter = new Parameter(new String[] {});
+
+    assertThatThrownBy(() -> parameter.getInt("none"))
+        .isInstanceOf(NumberFormatException.class)
+        .hasMessageContaining("none");
   }
 
   @Test

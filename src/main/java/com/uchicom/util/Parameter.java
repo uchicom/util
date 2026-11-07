@@ -8,14 +8,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Parameter
+ * コマンドライン引数を解釈するクラス。
+ *
+ * <p>引数の解釈仕様:
+ *
+ * <ul>
+ *   <li>{@code -key value}: キー {@code key} に値 {@code value} を登録する。
+ *   <li>値の位置にある引数が {@code -} で始まる場合、負数(例: {@code -5}, {@code -1.5})のときだけ値として扱う。 それ以外(例: {@code
+ *       -x})は次のキーとみなし、直前のキーはフラグ扱いになる。 したがって {@code -v -x file} は v=フラグ, x="file" と解釈される。
+ *   <li>値を伴わないフラグ({@code -flag} が末尾、または直後がキー)は、ダッシュを除いたキーで登録し、値はキー自身とする。
+ *   <li>{@code -} で始まらない引数 {@code arg} は、キー {@code arg} 値 {@code arg} のフラグとして登録する。
+ *   <li>同じキーが複数回指定された場合は後勝ち。
+ * </ul>
  *
  * @author uchicom: Shigeki Uchiyama
  */
 public class Parameter {
+
+  private static final Pattern NEGATIVE_NUMBER = Pattern.compile("-\\d+(\\.\\d+)?");
 
   private Map<String, String> parameterMap = new HashMap<>();
 
@@ -25,12 +39,21 @@ public class Parameter {
 
   private void setParameters(String[] args) {
     for (int i = 0; i < args.length; i++) {
-      if (args[i].startsWith("-") && i < args.length - 1) {
-        parameterMap.put(args[i].substring(1), args[++i]);
-      } else {
+      if (!args[i].startsWith("-")) {
         parameterMap.put(args[i], args[i]);
+        continue;
+      }
+      var key = args[i].substring(1);
+      if (i < args.length - 1 && isValue(args[i + 1])) {
+        parameterMap.put(key, args[++i]);
+      } else {
+        parameterMap.put(key, key);
       }
     }
+  }
+
+  private static boolean isValue(String arg) {
+    return !arg.startsWith("-") || NEGATIVE_NUMBER.matcher(arg).matches();
   }
 
   public void put(String key, String value) {
@@ -94,7 +117,11 @@ public class Parameter {
   }
 
   public int getInt(String key) {
-    return Integer.parseInt(parameterMap.get(key));
+    var value = parameterMap.get(key);
+    if (value == null) {
+      throw new NumberFormatException("parameter is not specified: " + key);
+    }
+    return Integer.parseInt(value);
   }
 
   public int getInt(String key, int defaultValue) {
