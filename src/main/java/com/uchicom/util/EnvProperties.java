@@ -50,10 +50,20 @@ public class EnvProperties extends Properties {
       }
 
       var envKey = key.replace('.', '_').toUpperCase(Locale.ROOT);
-      var envValue = System.getenv(envKey);
+      var envValue = getEnv(envKey);
       if (envValue != null && !envValue.isBlank()) {
         setProperty(key, envValue);
       }
     }
+  }
+
+  /**
+   * 環境変数を取得する. テストで差し替え可能にするため分離している.
+   *
+   * @param name 環境変数名
+   * @return 環境変数の値。未設定の場合はnull
+   */
+  String getEnv(String name) {
+    return System.getenv(name);
   }
 }
