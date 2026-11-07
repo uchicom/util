@@ -144,21 +144,6 @@ public class Parameter {
   }
 
   protected static List<Long> parseIntPattern(String arg) {
-    var list = new ArrayList<Long>();
-    Stream.of(arg.split(","))
-        .forEach(
-            id -> {
-              if (id.contains("-")) {
-                var splits = id.split("\\-", 0);
-                var start = Long.parseLong(splits[0]);
-                var end = Long.parseLong(splits[1]);
-                for (long i = start; i <= end; i++) {
-                  list.add(i);
-                }
-              } else {
-                list.add(Long.parseLong(id));
-              }
-            });
-    return list;
+    return Numbre.expandLong(arg);
   }
 }

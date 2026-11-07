@@ -206,13 +206,14 @@ public class ParameterTest {
   }
 
   @Test
-  public void parseIntPatterns_reversedRange_isEmpty() {
-    assertThat(Parameter.parseIntPatterns(new String[] {"5-3"})).isEmpty();
+  public void parseIntPatterns_reversedRange_throws() {
+    assertThatThrownBy(() -> Parameter.parseIntPatterns(new String[] {"5-3"}))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void parseIntPatterns_invalid_throws() {
     assertThatThrownBy(() -> Parameter.parseIntPatterns(new String[] {"a"}))
-        .isInstanceOf(NumberFormatException.class);
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

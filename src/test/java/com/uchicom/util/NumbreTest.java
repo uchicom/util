@@ -2,6 +2,7 @@
 package com.uchicom.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -46,5 +47,38 @@ public class NumbreTest {
     assertThat(actual3.get(2)).isEqualTo(5L);
     assertThat(actual3.get(3)).isEqualTo(6L);
     assertThat(actual3.get(4)).isEqualTo(7L);
+  }
+
+  @Test
+  public void expandLong_invalid() {
+    for (var arg :
+        new String[] {"5-", "-5", "", "1, 3", "1-2-3", "a", "1,,3", "5-3", "1-1000001"}) {
+      assertThatThrownBy(() -> Numbre.expandLong(arg))
+          .as(arg)
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining(arg);
+    }
+  }
+
+  @Test
+  public void expandLong_null() {
+    assertThatThrownBy(() -> Numbre.expandLong(null)).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void expandLong_maxRange() {
+    assertThat(Numbre.expandLong("1-1000000")).hasSize(1_000_000);
+  }
+
+  @Test
+  public void expandLong_tooManyElements() {
+    assertThatThrownBy(() -> Numbre.expandLong("1-1000000,2000000"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void expand_outOfIntRange() {
+    assertThatThrownBy(() -> Numbre.expand("2147483648"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }
