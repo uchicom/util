@@ -145,6 +145,24 @@ public class ParameterTest {
   }
 
   @Test
+  public void getLong() {
+    var parameter = new Parameter(new String[] {"-n", "4294967296", "-bad", "abc"});
+
+    assertThat(parameter.getLong("n")).isEqualTo(4294967296L);
+    assertThat(parameter.getLong("none")).isNull();
+    assertThatThrownBy(() -> parameter.getLong("bad")).isInstanceOf(NumberFormatException.class);
+  }
+
+  @Test
+  public void getLongWithDefault() {
+    var parameter = new Parameter(new String[] {"-n", "4294967296"});
+
+    assertThat(parameter.getLong("n", 1L)).isEqualTo(4294967296L);
+    assertThat(parameter.getLong("none", 1L)).isEqualTo(1L);
+    assertThat(parameter.getLong("none", null)).isNull();
+  }
+
+  @Test
   public void getLocalDate() {
     var parameter = new Parameter(new String[] {"-d", "2026-01-02"});
 

@@ -104,6 +104,21 @@ public class Parameter {
     return defaultValue;
   }
 
+  public Long getLong(String key) {
+    var value = parameterMap.get(key);
+    if (value == null) {
+      return null;
+    }
+    return Long.valueOf(value);
+  }
+
+  public Long getLong(String key, Long defaultValue) {
+    if (is(key)) {
+      return getLong(key);
+    }
+    return defaultValue;
+  }
+
   public boolean is(String key) {
     return parameterMap.containsKey(key);
   }
