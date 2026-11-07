@@ -74,6 +74,15 @@ public class DailyRollingFileHandler extends StreamHandler {
     return value;
   }
 
+  /**
+   * 指定した設定で生成する。ログディレクトリが存在しない場合は作成する.
+   *
+   * @param logDir ログ出力ディレクトリ
+   * @param logFormat {@link java.util.Formatter}形式のログフォーマット(引数: 日時, 出力元, ロガー名, レベル, メッセージ, 例外)
+   * @param fileNameFormat ファイル名。{@code %d}がyyyy-MM-dd形式の日付に置換される
+   * @param zoneId 日付判定とログ日時に使用するタイムゾーン
+   * @throws IOException ディレクトリ作成またはファイルオープンに失敗した場合
+   */
   public DailyRollingFileHandler(
       String logDir, String logFormat, String fileNameFormat, ZoneId zoneId) throws IOException {
     this.fileNameFormat = fileNameFormat;
@@ -176,6 +185,13 @@ public class DailyRollingFileHandler extends StreamHandler {
     return fileNameFormat.replace("%d", DateTimeFormatter.ISO_DATE.format(date));
   }
 
+  /**
+   * シャットダウンフック内など、LogManagerが利用できない状況でログを直接追記する.
+   *
+   * @param level ログレベル
+   * @param message メッセージ
+   * @throws IOException ファイルへの書き込みに失敗した場合
+   */
   public void logInShutdownHook(Level level, String message) throws IOException {
     var record = new LogRecord(level, message);
     var elem = Thread.currentThread().getStackTrace()[2];
