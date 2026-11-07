@@ -177,6 +177,84 @@ public class DailyRollingFileHandlerTest {
   }
 
   @Test
+  public void publish_nullLoggerName_isFormattedAsEmpty() throws Exception {
+    handler =
+        new DailyRollingFileHandler(tempDir.toString(), "[%3$s]%5$s%n", FILE_NAME_FORMAT, ZONE);
+    var now = ZonedDateTime.now(ZONE);
+    var record = new LogRecord(Level.INFO, "msg");
+    record.setInstant(now.toInstant());
+
+    handler.publish(record);
+
+    var file = tempDir.resolve(handler.generateFilename(now.toLocalDate()));
+    assertThat(read(file)).isEqualTo("[]msg" + System.lineSeparator());
+  }
+
+  @Test
+  public void publish_openFailure_doesNotAdvanceLogDate_andRetriesNextTime() throws Exception {
+    createHandler(tempDir);
+    var today = ZonedDateTime.now(ZONE);
+    var tomorrow = today.plusDays(1);
+    var tomorrowFile = tempDir.resolve(handler.generateFilename(tomorrow.toLocalDate()));
+    // 翌日のファイル名と同名のディレクトリを作り、open を失敗させる。
+    Files.createDirectory(tomorrowFile);
+
+    handler.publish(record(Level.INFO, "fail-1", tomorrow));
+    assertThat(handler.open(tomorrow.toLocalDate())).isFalse();
+
+    Files.delete(tomorrowFile);
+    handler.publish(record(Level.INFO, "retry", tomorrow));
+
+    assertThat(read(tomorrowFile)).contains("retry");
+  }
+
+  @Test
+  public void constructor_fromLogManager_usesConfiguredValues() throws Exception {
+    var prefix = DailyRollingFileHandler.class.getName() + ".";
+    var props =
+        prefix
+            + "logDir="
+            + tempDir.toString().replace("\\", "/")
+            + "\n"
+            + prefix
+            + "logFormat=%5$s%n\n"
+            + prefix
+            + "fileNameFormat=conf-%d.log\n"
+            + prefix
+            + "zoneId=Asia/Tokyo\n"
+            + prefix
+            + "level=WARNING\n";
+    var manager = java.util.logging.LogManager.getLogManager();
+    manager.readConfiguration(
+        new java.io.ByteArrayInputStream(props.getBytes(StandardCharsets.UTF_8)));
+    try {
+      handler = new DailyRollingFileHandler();
+      var now = ZonedDateTime.now(ZONE);
+
+      assertThat(handler.getLevel()).isEqualTo(Level.WARNING);
+      handler.publish(record(Level.WARNING, "configured", now));
+
+      assertThat(read(tempDir.resolve("conf-" + now.toLocalDate() + ".log")))
+          .isEqualTo("configured" + System.lineSeparator());
+    } finally {
+      manager.reset();
+    }
+  }
+
+  @Test
+  public void constructor_fromLogManager_withoutLogDir_throws() throws Exception {
+    var manager = java.util.logging.LogManager.getLogManager();
+    manager.readConfiguration(new java.io.ByteArrayInputStream(new byte[0]));
+    try {
+      org.assertj.core.api.Assertions.assertThatThrownBy(DailyRollingFileHandler::new)
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("logDir");
+    } finally {
+      manager.reset();
+    }
+  }
+
+  @Test
   public void getThrowableString_noThrown_isEmpty() throws Exception {
     createHandler(tempDir);
 
