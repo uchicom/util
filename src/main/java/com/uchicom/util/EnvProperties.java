@@ -13,7 +13,8 @@ import java.util.Properties;
  * <p>優先順位: システムプロパティ(-D) &gt; 環境変数 &gt; propertiesファイル
  *
  * <p>環境変数・システムプロパティによる上書きはload時に解決し、値をそのまま保持する。 上書き対象はpropertiesファイルに存在するキーのみで、空白のみの値は無視される。
- * 環境変数名はキーの{@code .}を{@code _}に置換し大文字にしたもの(例: {@code db.url} → {@code DB_URL})。
+ * 環境変数名はキーの{@code .}と{@code -}を{@code _}に置換し大文字にしたもの(例: {@code db.url} → {@code DB_URL}、{@code
+ * db-url} → {@code DB_URL})。
  */
 public class EnvProperties extends Properties {
 
@@ -49,7 +50,7 @@ public class EnvProperties extends Properties {
         continue;
       }
 
-      var envKey = key.replace('.', '_').toUpperCase(Locale.ROOT);
+      var envKey = key.replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
       var envValue = getEnv(envKey);
       if (envValue != null && !envValue.isBlank()) {
         setProperty(key, envValue);

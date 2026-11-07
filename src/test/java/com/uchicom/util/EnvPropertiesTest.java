@@ -110,6 +110,22 @@ public class EnvPropertiesTest {
   }
 
   @Test
+  public void getProperty_returnsEnvValue_whenKeyContainsHyphen() throws IOException {
+    var envProperties =
+        ResourceUtil.load(
+            new EnvProperties() {
+              @Override
+              String getEnv(String name) {
+                return "HYPHEN_KEY".equals(name) ? "env-value" : null;
+              }
+            },
+            new File("src/test/resources/hyphen.properties"),
+            "UTF-8");
+
+    assertThat(envProperties.getProperty("hyphen-key")).isEqualTo("env-value");
+  }
+
+  @Test
   public void getProperty_returnsRuntimeSetValue_whenNoEnvOrSystemProperty() throws IOException {
     var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
 
