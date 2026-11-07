@@ -3,45 +3,80 @@ package com.uchicom.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class Numbre {
 
+  /** 1つのパターンで展開できる最大要素数 */
+  public static final long MAX_EXPAND_SIZE = 1_000_000L;
+
+  /**
+   * "1,3,5-7"形式の文字列を展開する。
+   *
+   * @throws IllegalArgumentException 不正な形式、範囲の逆転、展開数が上限超過、int範囲外の場合
+   */
   public static List<Integer> expand(String arg) {
-    var list = new ArrayList<Integer>();
-    Stream.of(arg.split(","))
-        .forEach(
-            id -> {
-              if (id.contains("-")) {
-                var splits = id.split("\\-", 0);
-                var start = Integer.parseInt(splits[0]);
-                var end = Integer.parseInt(splits[1]);
-                for (int i = start; i <= end; i++) {
-                  list.add(i);
-                }
-              } else {
-                list.add(Integer.parseInt(id));
-              }
-            });
+    var longs = expandLong(arg);
+    var list = new ArrayList<Integer>(longs.size());
+    for (var value : longs) {
+      if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+        throw new IllegalArgumentException("Value out of int range: " + value);
+      }
+      list.add(value.intValue());
+    }
     return list;
   }
 
+  /**
+   * "1,3,5-7"形式の文字列を展開する。
+   *
+   * @throws IllegalArgumentException 不正な形式、範囲の逆転、展開数が上限({@link #MAX_EXPAND_SIZE})超過の場合
+   */
   public static List<Long> expandLong(String arg) {
+    if (arg == null) {
+      throw new IllegalArgumentException("Pattern must not be null");
+    }
     var list = new ArrayList<Long>();
-    Stream.of(arg.split(","))
-        .forEach(
-            id -> {
-              if (id.contains("-")) {
-                var splits = id.split("\\-", 0);
-                var start = Long.parseLong(splits[0]);
-                var end = Long.parseLong(splits[1]);
-                for (long i = start; i <= end; i++) {
-                  list.add(i);
-                }
-              } else {
-                list.add(Long.parseLong(id));
-              }
-            });
+    for (var token : arg.split(",", -1)) {
+      var splits = token.split("-", -1);
+      if (splits.length == 1) {
+        add(list, parse(splits[0], arg), arg);
+      } else if (splits.length == 2) {
+        var start = parse(splits[0], arg);
+        var end = parse(splits[1], arg);
+        if (start > end) {
+          throw new IllegalArgumentException(
+              "Range start must not be greater than end: '" + token + "' in '" + arg + "'");
+        }
+        if (end - start >= MAX_EXPAND_SIZE || end - start < 0) {
+          throw new IllegalArgumentException(
+              "Range is too large (max " + MAX_EXPAND_SIZE + "): '" + token + "' in '" + arg + "'");
+        }
+        for (long i = start; i <= end; i++) {
+          add(list, i, arg);
+        }
+      } else {
+        throw new IllegalArgumentException("Invalid range: '" + token + "' in '" + arg + "'");
+      }
+    }
     return list;
+  }
+
+  private static void add(List<Long> list, long value, String arg) {
+    if (list.size() >= MAX_EXPAND_SIZE) {
+      throw new IllegalArgumentException(
+          "Too many elements (max " + MAX_EXPAND_SIZE + ") in '" + arg + "'");
+    }
+    list.add(value);
+  }
+
+  private static long parse(String text, String arg) {
+    if (text.isEmpty()) {
+      throw new IllegalArgumentException("Empty number in '" + arg + "'");
+    }
+    try {
+      return Long.parseLong(text);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid number '" + text + "' in '" + arg + "'", e);
+    }
   }
 }
