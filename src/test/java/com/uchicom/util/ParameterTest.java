@@ -115,8 +115,7 @@ public class ParameterTest {
 
     assertThat(parameter.getInteger("n")).isEqualTo(42);
     assertThat(parameter.getInteger("none")).isNull();
-    assertThatThrownBy(() -> parameter.getInteger("bad"))
-        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> parameter.getInteger("bad")).isInstanceOf(NumberFormatException.class);
   }
 
   @Test
