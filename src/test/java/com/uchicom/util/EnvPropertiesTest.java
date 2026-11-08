@@ -23,7 +23,7 @@ public class EnvPropertiesTest {
           }
         },
         RESOURCE_FILE,
-        "UTF-8");
+        java.nio.charset.StandardCharsets.UTF_8);
   }
 
   @AfterEach
@@ -120,7 +120,7 @@ public class EnvPropertiesTest {
               }
             },
             new File("src/test/resources/hyphen.properties"),
-            "UTF-8");
+            java.nio.charset.StandardCharsets.UTF_8);
 
     assertThat(envProperties.getProperty("hyphen-key")).isEqualTo("env-value");
   }

@@ -7,15 +7,14 @@ util
 
 サーバーでも画面でもどちらでも使用できるユーティリティ
 
-
 ## Maven座標
 
 ```xml
-<dependency>
-<groupId>com.uchicom</groupId>
-<artifactId>util</artifactId>
-<version>1.6.6</version>
-</dependency>
+　<dependency>
+　　<groupId>com.uchicom</groupId>
+　　<artifactId>util</artifactId>
+　　<version>1.6.6</version>
+　</dependency>
 ```
 
 Java 21以上が必要です。モジュール名は `com.uchicom.util` です。
