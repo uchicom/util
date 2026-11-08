@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,18 @@ import org.junit.jupiter.api.Test;
 public class EnvPropertiesTest {
 
   private static final File RESOURCE_FILE = new File("src/test/resources/envProperties.properties");
+
+  private static EnvProperties createWithEnv(Map<String, String> env) throws IOException {
+    return ResourceUtil.load(
+        new EnvProperties() {
+          @Override
+          String getEnv(String name) {
+            return env.get(name);
+          }
+        },
+        RESOURCE_FILE,
+        java.nio.charset.StandardCharsets.UTF_8);
+  }
 
   @AfterEach
   public void tearDown() {
@@ -45,19 +58,15 @@ public class EnvPropertiesTest {
 
   @Test
   public void getProperty_returnsSystemProperty_evenIfEnvVarAndFileValueSet() throws IOException {
-    // ENV_PROPERTIES_TEST_KEY=env-value is configured for the test JVM via the
-    // maven-surefire-plugin <environmentVariables> in pom.xml.
     System.setProperty("env.properties.test.key", "sys-value");
-    var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
+    var envProperties = createWithEnv(Map.of("ENV_PROPERTIES_TEST_KEY", "env-value"));
 
     assertThat(envProperties.getProperty("env.properties.test.key")).isEqualTo("sys-value");
   }
 
   @Test
   public void getProperty_returnsEnvValue_whenNoSystemPropertySet() throws IOException {
-    // ENV_PROPERTIES_TEST_KEY=env-value is configured for the test JVM via the
-    // maven-surefire-plugin <environmentVariables> in pom.xml.
-    var envProperties = ResourceUtil.createEnvProperties(RESOURCE_FILE, "UTF-8");
+    var envProperties = createWithEnv(Map.of("ENV_PROPERTIES_TEST_KEY", "env-value"));
 
     assertThat(envProperties.getProperty("env.properties.test.key")).isEqualTo("env-value");
   }
@@ -98,6 +107,22 @@ public class EnvPropertiesTest {
     assertThat(envProperties).isInstanceOf(Properties.class);
     assertThat(envProperties.containsKey("db.url")).isTrue();
     assertThat(envProperties.size()).isEqualTo(3);
+  }
+
+  @Test
+  public void getProperty_returnsEnvValue_whenKeyContainsHyphen() throws IOException {
+    var envProperties =
+        ResourceUtil.load(
+            new EnvProperties() {
+              @Override
+              String getEnv(String name) {
+                return "HYPHEN_KEY".equals(name) ? "env-value" : null;
+              }
+            },
+            new File("src/test/resources/hyphen.properties"),
+            java.nio.charset.StandardCharsets.UTF_8);
+
+    assertThat(envProperties.getProperty("hyphen-key")).isEqualTo("env-value");
   }
 
   @Test

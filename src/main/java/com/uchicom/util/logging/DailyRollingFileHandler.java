@@ -14,13 +14,31 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
 
+/**
+ * 日付ごとにログファイルを切り替えるハンドラ.
+ *
+ * <p>logging.propertiesから引数なしで生成する場合は、以下のプロパティを参照する。
+ *
+ * <ul>
+ *   <li>{@code <クラス名>.logDir} (必須)
+ *   <li>{@code <クラス名>.logFormat} (省略時: {@code %1$tF %1$tT [%4$s] %2$s %5$s%6$s%n})
+ *   <li>{@code <クラス名>.fileNameFormat} (省略時: {@code app-%d.log})
+ *   <li>{@code <クラス名>.zoneId} (省略時: システムのタイムゾーン)
+ *   <li>{@code <クラス名>.level} (省略時: INFO)
+ * </ul>
+ */
 public class DailyRollingFileHandler extends StreamHandler {
+
+  private static final String DEFAULT_LOG_FORMAT = "%1$tF %1$tT [%4$s] %2$s %5$s%6$s%n";
+  private static final String DEFAULT_FILE_NAME_FORMAT = "app-%d.log";
 
   private final String fileNameFormat;
   private final String logFormat;
@@ -28,6 +46,43 @@ public class DailyRollingFileHandler extends StreamHandler {
   private LocalDate logDate;
   private final ZoneId zoneId;
 
+  /** logging.propertiesの設定値を使用して生成する. */
+  public DailyRollingFileHandler() throws IOException {
+    this(LogManager.getLogManager());
+  }
+
+  private DailyRollingFileHandler(LogManager manager) throws IOException {
+    this(
+        required(manager, "logDir"),
+        property(manager, "logFormat", DEFAULT_LOG_FORMAT),
+        property(manager, "fileNameFormat", DEFAULT_FILE_NAME_FORMAT),
+        ZoneId.of(property(manager, "zoneId", ZoneId.systemDefault().getId())));
+    setLevel(Level.parse(property(manager, "level", Level.INFO.getName())));
+  }
+
+  private static String property(LogManager manager, String name, String defaultValue) {
+    var value = manager.getProperty(DailyRollingFileHandler.class.getName() + "." + name);
+    return value == null || value.isBlank() ? defaultValue : value.trim();
+  }
+
+  private static String required(LogManager manager, String name) {
+    var value = property(manager, name, null);
+    if (value == null) {
+      throw new IllegalArgumentException(
+          DailyRollingFileHandler.class.getName() + "." + name + " is not configured");
+    }
+    return value;
+  }
+
+  /**
+   * 指定した設定で生成する。ログディレクトリが存在しない場合は作成する.
+   *
+   * @param logDir ログ出力ディレクトリ
+   * @param logFormat {@link java.util.Formatter}形式のログフォーマット(引数: 日時, 出力元, ロガー名, レベル, メッセージ, 例外)
+   * @param fileNameFormat ファイル名。{@code %d}がyyyy-MM-dd形式の日付に置換される
+   * @param zoneId 日付判定とログ日時に使用するタイムゾーン
+   * @throws IOException ディレクトリ作成またはファイルオープンに失敗した場合
+   */
   public DailyRollingFileHandler(
       String logDir, String logFormat, String fileNameFormat, ZoneId zoneId) throws IOException {
     this.fileNameFormat = fileNameFormat;
@@ -62,7 +117,7 @@ public class DailyRollingFileHandler extends StreamHandler {
             logFormat,
             zdt,
             source,
-            record.getLoggerName(),
+            Objects.toString(record.getLoggerName(), ""),
             record.getLevel().getLocalizedName(),
             message,
             throwable);
@@ -106,17 +161,18 @@ public class DailyRollingFileHandler extends StreamHandler {
   void changeLogFile(LogRecord record) {
     var recordDate = LocalDate.ofInstant(record.getInstant(), zoneId);
 
-    if (!logDate.equals(recordDate)) {
-      open(recordDate);
+    if (!logDate.equals(recordDate) && open(recordDate)) {
       logDate = recordDate;
     }
   }
 
-  void open(LocalDate fileDate) {
+  boolean open(LocalDate fileDate) {
     try {
       setOutputStream(createOutputStream(fileDate));
+      return true;
     } catch (IOException ex) {
       reportError(null, ex, ErrorManager.GENERIC_FAILURE);
+      return false;
     }
   }
 
@@ -126,9 +182,16 @@ public class DailyRollingFileHandler extends StreamHandler {
   }
 
   String generateFilename(LocalDate date) {
-    return fileNameFormat.replaceAll("%d", DateTimeFormatter.ISO_DATE.format(date));
+    return fileNameFormat.replace("%d", DateTimeFormatter.ISO_DATE.format(date));
   }
 
+  /**
+   * シャットダウンフック内など、LogManagerが利用できない状況でログを直接追記する.
+   *
+   * @param level ログレベル
+   * @param message メッセージ
+   * @throws IOException ファイルへの書き込みに失敗した場合
+   */
   public void logInShutdownHook(Level level, String message) throws IOException {
     var record = new LogRecord(level, message);
     var elem = Thread.currentThread().getStackTrace()[2];
