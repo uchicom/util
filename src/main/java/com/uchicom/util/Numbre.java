@@ -8,6 +8,8 @@ import java.util.List;
  * "1,3,5-7"形式の数値パターンを展開するユーティリティ.
  *
  * <p>カンマ区切りで複数指定でき、{@code a-b}で範囲(両端を含む)を指定できる。
+ *
+ * <p>クラス名 {@code Numbre} は、{@link java.lang.Number} との名前衝突を避けるため、他の言語での綴りを意図的に使用している。
  */
 public class Numbre {
 

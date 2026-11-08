@@ -24,7 +24,7 @@ public class ResourceUtil {
    */
   public static Properties createProperties(File file, String charset)
       throws FileNotFoundException, IOException {
-    return load(new Properties(), file, charset);
+    return load(new Properties(), file, toCharset(charset));
   }
 
   /**
@@ -37,7 +37,7 @@ public class ResourceUtil {
    */
   public static Properties createProperties(InputStream is, String charset)
       throws IOException, UnsupportedEncodingException {
-    return load(new Properties(), is, charset);
+    return load(new Properties(), is, toCharset(charset));
   }
 
   /**
@@ -51,7 +51,7 @@ public class ResourceUtil {
    */
   public static EnvProperties createEnvProperties(File file, String charset)
       throws FileNotFoundException, IOException {
-    return load(new EnvProperties(), file, charset);
+    return load(new EnvProperties(), file, toCharset(charset));
   }
 
   /**
@@ -65,7 +65,7 @@ public class ResourceUtil {
    */
   public static EnvProperties createEnvProperties(InputStream is, String charset)
       throws IOException, UnsupportedEncodingException {
-    return load(new EnvProperties(), is, charset);
+    return load(new EnvProperties(), is, toCharset(charset));
   }
 
   /**
@@ -143,6 +143,16 @@ public class ResourceUtil {
     return loadClasspath(new EnvProperties(), name, charset);
   }
 
+  private static Charset toCharset(String charset) throws UnsupportedEncodingException {
+    try {
+      return Charset.forName(charset);
+    } catch (IllegalArgumentException e) {
+      var ex = new UnsupportedEncodingException(charset);
+      ex.initCause(e);
+      throw ex;
+    }
+  }
+
   static <T extends Properties> T loadClasspath(T properties, String name, Charset charset)
       throws IOException {
     try (var is = ResourceUtil.class.getClassLoader().getResourceAsStream(name)) {
@@ -165,24 +175,6 @@ public class ResourceUtil {
 
   static <T extends Properties> T load(T properties, InputStream is, Charset charset)
       throws IOException {
-    try (var isr = new InputStreamReader(is, charset)) {
-      properties.load(isr);
-    }
-    return properties;
-  }
-
-  static <T extends Properties> T load(T properties, File file, String charset)
-      throws FileNotFoundException, IOException {
-    if (file.exists() && file.isFile()) {
-      try (var fis = new FileInputStream(file)) {
-        load(properties, fis, charset);
-      }
-    }
-    return properties;
-  }
-
-  static <T extends Properties> T load(T properties, InputStream is, String charset)
-      throws IOException, UnsupportedEncodingException {
     try (var isr = new InputStreamReader(is, charset)) {
       properties.load(isr);
     }
